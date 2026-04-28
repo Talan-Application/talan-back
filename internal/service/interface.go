@@ -1,4 +1,4 @@
-package repository
+package service
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"github.com/Talan-Application/talan-back/internal/domain"
 )
 
-type UserRepository interface {
+type UserService interface {
 	CreateUser(ctx context.Context, user domain.User) (domain.User, error)
-	GetUsers(ctx context.Context, limit, offset *int) ([]domain.User, error)
+	GetUsers(ctx context.Context, limit *int, offset *int) ([]domain.User, error)
 }
