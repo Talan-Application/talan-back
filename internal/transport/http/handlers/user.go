@@ -65,7 +65,7 @@ func (h *UserHandler) GetUser(c *gin.Context) {
 	if err != nil {
 		core_errors.HandleError(c, fmt.Errorf(
 			"convert id to int error: %w",
-			err,
+			core_errors.ErrInvalidArgument,
 		))
 		return
 	}
@@ -77,4 +77,22 @@ func (h *UserHandler) GetUser(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, response.UserResponseFromDomain(user))
+}
+
+func (h *UserHandler) DeleteUser(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		core_errors.HandleError(c, fmt.Errorf(
+			"convert id to int error: %w",
+			core_errors.ErrInvalidArgument,
+		))
+		return
+	}
+
+	if err := h.userService.DeleteUser(c.Request.Context(), id); err != nil {
+		core_errors.HandleError(c, err)
+		return
+	}
+
+	c.Status(http.StatusNoContent)
 }

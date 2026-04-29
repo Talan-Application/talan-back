@@ -57,3 +57,10 @@ func (s *UserSrv) GetUserById(ctx context.Context, id int) (domain.User, error) 
 	}
 	return user, nil
 }
+
+func (s *UserSrv) DeleteUser(ctx context.Context, id int) error {
+	if err := s.userRepository.DeleteUser(ctx, id); err != nil {
+		return fmt.Errorf("delete user: %w", err)
+	}
+	return nil
+}
