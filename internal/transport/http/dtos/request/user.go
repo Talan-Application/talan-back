@@ -13,9 +13,15 @@ type CreateUserRequest struct {
 	Password    string `json:"password"`
 	Email       string `json:"email"`
 	PhoneNumber string `json:"phone_number"`
+	Role        string `json:"role"`
 }
 
 func DomainFromCreateUserDto(dto CreateUserRequest) domain.User {
+	userRole, err := domain.ParseRole(dto.Role)
+	if err != nil {
+		userRole = domain.RoleStudent
+	}
+
 	return domain.User{
 		FirstName:   dto.FirstName,
 		LastName:    dto.LastName,
@@ -23,6 +29,7 @@ func DomainFromCreateUserDto(dto CreateUserRequest) domain.User {
 		Password:    dto.Password,
 		Email:       dto.Email,
 		PhoneNumber: &dto.PhoneNumber,
+		Role:        userRole,
 	}
 }
 

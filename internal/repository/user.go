@@ -23,11 +23,14 @@ func (r *UserRepo) CreateUser(ctx context.Context, user domain.User) (domain.Use
 	ctx, cancel := context.WithTimeout(ctx, r.pool.OpTimeout())
 	defer cancel()
 
-	query := `INSERT INTO talan.users (first_name, last_name, middle_name, email, phone_number, password, created_at) 
-				VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP) RETURNING id, first_name, last_name, middle_name, email, phone_number, created_at, updated_at`
+	query := `INSERT INTO talan.users (first_name, last_name, middle_name,
+                         email, phone_number, password, role, created_at) 
+             VALUES ($1, $2, $3, $4, $5, $6, $7, CURRENT_TIMESTAMP) 
+             RETURNING id, first_name, last_name, middle_name, email, phone_number, role, created_at, updated_at`
 
-	row := r.pool.QueryRow(ctx, query, user.FirstName, user.LastName, user.MiddleName, user.Email, user.PhoneNumber, user.Password)
-
+	row := r.pool.QueryRow(ctx, query,
+		user.FirstName, user.LastName, user.MiddleName,
+		user.Email, user.PhoneNumber, user.Password, user.Role)
 	var userDomain domain.User
 	err := row.Scan(
 		&userDomain.ID,
@@ -36,13 +39,13 @@ func (r *UserRepo) CreateUser(ctx context.Context, user domain.User) (domain.Use
 		&userDomain.MiddleName,
 		&userDomain.Email,
 		&userDomain.PhoneNumber,
+		&userDomain.Role,
 		&userDomain.CreatedAt,
+		&userDomain.UpdatedAt,
 	)
-
 	if err != nil {
 		return domain.User{}, fmt.Errorf("scan error: %w", err)
 	}
-
 	return userDomain, nil
 }
 
@@ -51,7 +54,7 @@ func (r *UserRepo) GetUsers(ctx context.Context, limit, offset *int) ([]domain.U
 	defer cancel()
 
 	query := `SELECT id, first_name, last_name, middle_name, 
-       				email, phone_number, created_at, updated_at
+       				email, phone_number, role, created_at, updated_at
 					FROM talan.users ORDER BY id LIMIT $1 OFFSET $2`
 
 	rows, err := r.pool.Query(ctx, query, limit, offset)
@@ -71,6 +74,7 @@ func (r *UserRepo) GetUsers(ctx context.Context, limit, offset *int) ([]domain.U
 			&user.MiddleName,
 			&user.Email,
 			&user.PhoneNumber,
+			&user.Role,
 			&user.CreatedAt,
 			&user.UpdatedAt,
 		)
@@ -93,33 +97,23 @@ func (r *UserRepo) GetUser(ctx context.Context, id int) (domain.User, error) {
 	defer cancel()
 
 	query := `SELECT id, first_name, last_name, middle_name,
-       			email, phone_number, created_at, updated_at
-				FROM talan.users WHERE id = $1`
+       			email, phone_number, role, created_at, updated_at
+             FROM talan.users WHERE id = $1`
 
 	row := r.pool.QueryRow(ctx, query, id)
 	var user domain.User
 	err := row.Scan(
-		&user.ID,
-		&user.FirstName,
-		&user.LastName,
-		&user.MiddleName,
-		&user.Email,
-		&user.PhoneNumber,
-		&user.CreatedAt,
-		&user.UpdatedAt,
+		&user.ID, &user.FirstName, &user.LastName, &user.MiddleName,
+		&user.Email, &user.PhoneNumber, &user.Role,
+		&user.CreatedAt, &user.UpdatedAt,
 	)
 
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return domain.User{}, fmt.Errorf(
-				"user with id=%d: %w",
-				id,
-				core_errors.ErrNotFound,
-			)
+			return domain.User{}, fmt.Errorf("user with id=%d: %w", id, core_errors.ErrNotFound)
 		}
 		return domain.User{}, fmt.Errorf("scan user: %w", err)
 	}
-
 	return user, nil
 }
 
@@ -147,7 +141,7 @@ func (r *UserRepo) UpdateUser(ctx context.Context, id int, user domain.User) (do
 	query := `UPDATE talan.users SET first_name=$1, last_name=$2,
                        middle_name=$3, phone_number=$4, updated_at=CURRENT_TIMESTAMP
                    WHERE id = $5 RETURNING id, first_name, last_name, middle_name, email,
-                       phone_number, created_at, updated_at`
+                       phone_number, role, created_at, updated_at`
 
 	row := r.pool.QueryRow(
 		ctx,
@@ -167,6 +161,7 @@ func (r *UserRepo) UpdateUser(ctx context.Context, id int, user domain.User) (do
 		&updatedUser.MiddleName,
 		&updatedUser.Email,
 		&updatedUser.PhoneNumber,
+		&updatedUser.Role,
 		&updatedUser.CreatedAt,
 		&updatedUser.UpdatedAt,
 	)
