@@ -10,7 +10,17 @@ type User struct {
 	PhoneNumber *string    `db:"phone_number"`
 	Email       string     `db:"email"`
 	Password    string     `db:"password"`
+	Role        UserRole   `db:"role"`
 	IsVerified  bool       `db:"is_verified"`
 	CreatedAt   time.Time  `db:"created_at"`
 	UpdatedAt   *time.Time `db:"updated_at"`
+}
+
+func (u *User) HasAnyRole(roles ...UserRole) bool {
+	for _, r := range roles {
+		if u.Role == r {
+			return true
+		}
+	}
+	return false
 }
