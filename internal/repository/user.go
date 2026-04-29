@@ -2,10 +2,13 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
+	core_errors "github.com/Talan-Application/talan-back/internal/core/errors"
 	"github.com/Talan-Application/talan-back/internal/domain"
 	"github.com/Talan-Application/talan-back/internal/infrastructure/postgres"
+	"github.com/jackc/pgx/v5"
 )
 
 type UserRepo struct {
@@ -83,4 +86,56 @@ func (r *UserRepo) GetUsers(ctx context.Context, limit, offset *int) ([]domain.U
 	}
 
 	return users, nil
+}
+
+func (r *UserRepo) GetUser(ctx context.Context, id int) (domain.User, error) {
+	ctx, cancel := context.WithTimeout(ctx, r.pool.OpTimeout())
+	defer cancel()
+
+	query := `SELECT id, first_name, last_name, middle_name,
+       			email, phone_number, created_at, updated_at
+				FROM talan.users WHERE id = $1`
+
+	row := r.pool.QueryRow(ctx, query, id)
+	var user domain.User
+	err := row.Scan(
+		&user.ID,
+		&user.FirstName,
+		&user.LastName,
+		&user.MiddleName,
+		&user.Email,
+		&user.PhoneNumber,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+	)
+
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return domain.User{}, fmt.Errorf(
+				"user with id=%d: %w",
+				id,
+				core_errors.ErrNotFound,
+			)
+		}
+		return domain.User{}, fmt.Errorf("scan user: %w", err)
+	}
+
+	return user, nil
+}
+
+func (r *UserRepo) DeleteUser(ctx context.Context, id int) error {
+	ctx, cancel := context.WithTimeout(ctx, r.pool.OpTimeout())
+	defer cancel()
+
+	query := `DELETE FROM talan.users WHERE id = $1`
+
+	cmdTag, err := r.pool.Exec(ctx, query, id)
+	if err != nil {
+		return fmt.Errorf("exec query: %w", err)
+	}
+	if cmdTag.RowsAffected() == 0 {
+		return fmt.Errorf("user with id=%d: %w", id, core_errors.ErrNotFound)
+	}
+
+	return nil
 }

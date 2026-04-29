@@ -21,7 +21,6 @@ type AppError struct {
 	Message string `json:"message"`
 }
 
-// HandleError maps domain errors to HTTP responses and sends them via Gin
 func HandleError(c *gin.Context, err error) {
 	var appErr *AppError
 
