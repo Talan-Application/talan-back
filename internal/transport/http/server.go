@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/Talan-Application/talan-back/internal/transport/http/handlers"
+	"github.com/Talan-Application/talan-back/internal/transport/http/middlewares"
 	"github.com/gin-gonic/gin"
 )
 
@@ -16,9 +17,17 @@ func NewHTTPServer(user UserService) *SimpleServer {
 	userHandler := handlers.NewUserHandler(user)
 
 	router := gin.Default()
+	router.Use(middlewares.CORSMiddleware())
+	router.Use(middlewares.ErrorHandler())
+
 	router.POST("/users", userHandler.CreateUser)
 	router.GET("/users", userHandler.GetUsers)
 
+	protected := router.Group("/")
+	protected.Use(middlewares.AuthMiddleware("jwt_secret"))
+	{
+		protected.GET("/ping", func(c *gin.Context) { c.JSON(200, gin.H{"message": "pong"}) })
+	}
 	return &SimpleServer{router, userHandler}
 }
 

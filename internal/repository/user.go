@@ -20,10 +20,10 @@ func (r *UserRepo) CreateUser(ctx context.Context, user domain.User) (domain.Use
 	ctx, cancel := context.WithTimeout(ctx, r.pool.OpTimeout())
 	defer cancel()
 
-	query := `INSERT INTO talan.users (first_name, last_name, middle_name, email, password, created_at) 
-				VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP) RETURNING id, first_name, last_name, middle_name, email, created_at`
+	query := `INSERT INTO talan.users (first_name, last_name, middle_name, email, phone_number, password, created_at) 
+				VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP) RETURNING id, first_name, last_name, middle_name, email, phone_number, created_at, updated_at`
 
-	row := r.pool.QueryRow(ctx, query, user.FirstName, user.LastName, user.MiddleName, user.Email, user.Password)
+	row := r.pool.QueryRow(ctx, query, user.FirstName, user.LastName, user.MiddleName, user.Email, user.PhoneNumber, user.Password)
 
 	var userDomain domain.User
 	err := row.Scan(
@@ -32,6 +32,7 @@ func (r *UserRepo) CreateUser(ctx context.Context, user domain.User) (domain.Use
 		&userDomain.LastName,
 		&userDomain.MiddleName,
 		&userDomain.Email,
+		&userDomain.PhoneNumber,
 		&userDomain.CreatedAt,
 	)
 
