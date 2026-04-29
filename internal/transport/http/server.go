@@ -23,8 +23,8 @@ func NewHTTPServer(user UserService) *SimpleServer {
 	router.POST("/users", userHandler.CreateUser)
 	router.GET("/users", userHandler.GetUsers)
 	router.GET("/users/:id", userHandler.GetUser)
-	//router.PUT("/users/:id")
-	router.DELETE("/users/:id")
+	router.PATCH("/users/:id", userHandler.UpdateUser)
+	router.DELETE("/users/:id", userHandler.DeleteUser)
 
 	protected := router.Group("/")
 	protected.Use(middlewares.AuthMiddleware("jwt_secret"))

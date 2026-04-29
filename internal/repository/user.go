@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	core_errors "github.com/Talan-Application/talan-back/internal/core/errors"
+	"github.com/Talan-Application/talan-back/internal/core/errors"
 	"github.com/Talan-Application/talan-back/internal/domain"
 	"github.com/Talan-Application/talan-back/internal/infrastructure/postgres"
 	"github.com/jackc/pgx/v5"
@@ -138,4 +138,48 @@ func (r *UserRepo) DeleteUser(ctx context.Context, id int) error {
 	}
 
 	return nil
+}
+
+func (r *UserRepo) UpdateUser(ctx context.Context, id int, user domain.User) (domain.User, error) {
+	ctx, cancel := context.WithTimeout(ctx, r.pool.OpTimeout())
+	defer cancel()
+
+	query := `UPDATE talan.users SET first_name=$1, last_name=$2,
+                       middle_name=$3, phone_number=$4, updated_at=CURRENT_TIMESTAMP
+                   WHERE id = $5 RETURNING id, first_name, last_name, middle_name, email,
+                       phone_number, created_at, updated_at`
+
+	row := r.pool.QueryRow(
+		ctx,
+		query,
+		user.FirstName,
+		user.LastName,
+		user.MiddleName,
+		user.PhoneNumber,
+		id,
+	)
+
+	var updatedUser domain.User
+	err := row.Scan(
+		&updatedUser.ID,
+		&updatedUser.FirstName,
+		&updatedUser.LastName,
+		&updatedUser.MiddleName,
+		&updatedUser.Email,
+		&updatedUser.PhoneNumber,
+		&updatedUser.CreatedAt,
+		&updatedUser.UpdatedAt,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return domain.User{}, fmt.Errorf(
+				"user with id=%d: %w",
+				id,
+				core_errors.ErrNotFound,
+			)
+		}
+		return domain.User{}, fmt.Errorf("scan user: %w", err)
+	}
+
+	return updatedUser, nil
 }
