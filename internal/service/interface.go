@@ -11,4 +11,5 @@ type UserService interface {
 	GetUsers(ctx context.Context, limit *int, offset *int) ([]domain.User, error)
 	GetUserById(ctx context.Context, id int) (domain.User, error)
 	DeleteUser(ctx context.Context, id int) error
+	UpdateUser(ctx context.Context, id int, user domain.User) (domain.User, error)
 }

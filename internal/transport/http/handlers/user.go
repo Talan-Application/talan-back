@@ -23,7 +23,7 @@ func NewUserHandler(userService service.UserService) *UserHandler {
 func (h *UserHandler) CreateUser(c *gin.Context) {
 	var req request.CreateUserRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		core_errors.HandleError(c, err)
+		core_errors.HandleError(c, fmt.Errorf("bind json: %w", err))
 		return
 	}
 
@@ -33,7 +33,7 @@ func (h *UserHandler) CreateUser(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, res)
+	c.JSON(http.StatusOK, response.UserResponseFromDomain(res))
 }
 
 func (h *UserHandler) GetUsers(c *gin.Context) {
@@ -95,4 +95,40 @@ func (h *UserHandler) DeleteUser(c *gin.Context) {
 	}
 
 	c.Status(http.StatusNoContent)
+}
+
+func (h *UserHandler) UpdateUser(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		core_errors.HandleError(c, fmt.Errorf(
+			"convert id to int error: %w",
+			core_errors.ErrInvalidArgument,
+		))
+	}
+
+	var req request.UpdateUserRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		core_errors.HandleError(
+			c,
+			fmt.Errorf("bind json: %w", err),
+		)
+		return
+	} else if err := req.ValidateUpdateUserRequest(); err != nil {
+		core_errors.HandleError(c, fmt.Errorf(
+			"validate update user request: %w",
+			err,
+		))
+	}
+
+	res, err := h.userService.UpdateUser(
+		c.Request.Context(),
+		id,
+		request.DomainFromUpdateUserDto(req),
+	)
+	if err != nil {
+		core_errors.HandleError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, response.UserResponseFromDomain(res))
 }

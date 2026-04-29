@@ -53,7 +53,7 @@ func (s *UserSrv) GetUsers(ctx context.Context, limit *int, offset *int) ([]doma
 func (s *UserSrv) GetUserById(ctx context.Context, id int) (domain.User, error) {
 	user, err := s.userRepository.GetUser(ctx, id)
 	if err != nil {
-		return domain.User{}, fmt.Errorf("get user from repository: %w", err)
+		return domain.User{}, fmt.Errorf("get user: %w", err)
 	}
 	return user, nil
 }
@@ -63,4 +63,18 @@ func (s *UserSrv) DeleteUser(ctx context.Context, id int) error {
 		return fmt.Errorf("delete user: %w", err)
 	}
 	return nil
+}
+
+func (s *UserSrv) UpdateUser(ctx context.Context, id int, user domain.User) (domain.User, error) {
+	user, err := s.userRepository.GetUser(ctx, id)
+	if err != nil {
+		return domain.User{}, fmt.Errorf("get user: %w", err)
+	}
+
+	updatedUser, err := s.userRepository.UpdateUser(ctx, id, user)
+	if err != nil {
+		return domain.User{}, fmt.Errorf("update user: %w", err)
+	}
+
+	return updatedUser, nil
 }
