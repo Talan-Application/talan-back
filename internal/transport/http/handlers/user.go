@@ -1,12 +1,14 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
 	core_errors "github.com/Talan-Application/talan-back/internal/core/errors"
 	"github.com/Talan-Application/talan-back/internal/service"
 	"github.com/Talan-Application/talan-back/internal/transport/http/dtos/request"
+	"github.com/Talan-Application/talan-back/internal/transport/http/dtos/response"
 	"github.com/gin-gonic/gin"
 )
 
@@ -56,4 +58,23 @@ func (h *UserHandler) GetUsers(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, res)
+}
+
+func (h *UserHandler) GetUser(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		core_errors.HandleError(c, fmt.Errorf(
+			"convert id to int error: %w",
+			err,
+		))
+		return
+	}
+
+	user, err := h.userService.GetUserById(c.Request.Context(), id)
+	if err != nil {
+		core_errors.HandleError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, response.UserResponseFromDomain(user))
 }
