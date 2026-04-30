@@ -16,4 +16,5 @@ type UserService interface {
 
 type IAuthService interface {
 	Registration(ctx context.Context, user domain.User) error
+	Authenticate(ctx context.Context, email string, password string) (domain.Token, error)
 }

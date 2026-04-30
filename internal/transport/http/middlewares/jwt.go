@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/Talan-Application/talan-back/internal/core/errors"
+	"github.com/Talan-Application/talan-back/internal/domain"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -43,8 +44,10 @@ func AuthMiddleware(secret string) gin.HandlerFunc {
 		if claims, ok := token.Claims.(jwt.MapClaims); ok {
 			if sub, ok := claims["sub"].(float64); ok {
 				c.Set("userId", int(sub))
-			} else {
-				c.Set("userId", claims["sub"])
+			}
+
+			if roleVal, ok := claims["role"].(float64); ok {
+				c.Set("userRole", domain.UserRole(int(roleVal)))
 			}
 		}
 

@@ -122,7 +122,7 @@ func (r *UserRepository) GetUserByEmail(ctx context.Context, email string) (doma
 	defer cancel()
 
 	query := `SELECT id, first_name, last_name, middle_name, 
-			email, phone_number, role, created_at, updated_at
+			email, phone_number, role, created_at, updated_at, is_verified, password
 				FROM talan.users WHERE email = $1`
 
 	row := r.pool.QueryRow(ctx, query, email)
@@ -138,6 +138,8 @@ func (r *UserRepository) GetUserByEmail(ctx context.Context, email string) (doma
 		&user.Role,
 		&user.CreatedAt,
 		&user.UpdatedAt,
+		&user.IsVerified,
+		&user.Password,
 	)
 
 	if err != nil {

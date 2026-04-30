@@ -23,10 +23,10 @@ func NewHTTPServer(user UserService, auth AuthService) *SimpleServer {
 	router.Use(middlewares.ErrorHandler())
 
 	router.POST("/signup", authHandler.Registration)
-	router.POST("/login")
+	router.POST("/login", authHandler.Login)
 
 	protected := router.Group("/")
-	protected.Use(middlewares.AuthMiddleware("jwt_secret"))
+	protected.Use(middlewares.AuthMiddleware("mysecretkeyhere"))
 	{
 		protected.GET("/ping", func(c *gin.Context) { c.JSON(200, gin.H{"message": "pong"}) })
 		protected.POST("/users", userHandler.CreateUser)

@@ -38,3 +38,23 @@ func (h *AuthHandler) Registration(c *gin.Context) {
 
 	c.Status(http.StatusCreated)
 }
+
+func (h *AuthHandler) Login(c *gin.Context) {
+	var req request.LoginRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		core_errors.HandleError(c, fmt.Errorf("bind json: %w", err))
+		return
+	}
+	if err := req.Validate(); err != nil {
+		core_errors.HandleError(c, err)
+		return
+	}
+
+	res, err := h.authService.Authenticate(c.Request.Context(), req.Email, req.Password)
+	if err != nil {
+		core_errors.HandleError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusCreated, res)
+}
