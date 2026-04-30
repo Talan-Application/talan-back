@@ -21,7 +21,8 @@ func main() {
 	userRepo := repository.NewUserRepository(db)
 
 	userService := service.NewUserService(userRepo)
+	authService := service.NewAuthService(userRepo)
 
-	server := internalHttp.NewHTTPServer(userService)
+	server := internalHttp.NewHTTPServer(userService, authService)
 	server.Run(ctx)
 }

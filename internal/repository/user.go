@@ -11,15 +11,15 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-type UserRepo struct {
+type UserRepository struct {
 	pool infrastructure_postgres.Pool
 }
 
-func NewUserRepository(pool infrastructure_postgres.Pool) *UserRepo {
-	return &UserRepo{pool}
+func NewUserRepository(pool infrastructure_postgres.Pool) *UserRepository {
+	return &UserRepository{pool}
 }
 
-func (r *UserRepo) CreateUser(ctx context.Context, user domain.User) (domain.User, error) {
+func (r *UserRepository) CreateUser(ctx context.Context, user domain.User) (domain.User, error) {
 	ctx, cancel := context.WithTimeout(ctx, r.pool.OpTimeout())
 	defer cancel()
 
@@ -49,7 +49,7 @@ func (r *UserRepo) CreateUser(ctx context.Context, user domain.User) (domain.Use
 	return userDomain, nil
 }
 
-func (r *UserRepo) GetUsers(ctx context.Context, limit, offset *int) ([]domain.User, error) {
+func (r *UserRepository) GetUsers(ctx context.Context, limit, offset *int) ([]domain.User, error) {
 	ctx, cancel := context.WithTimeout(ctx, r.pool.OpTimeout())
 	defer cancel()
 
@@ -92,7 +92,7 @@ func (r *UserRepo) GetUsers(ctx context.Context, limit, offset *int) ([]domain.U
 	return users, nil
 }
 
-func (r *UserRepo) GetUser(ctx context.Context, id int) (domain.User, error) {
+func (r *UserRepository) GetUser(ctx context.Context, id int) (domain.User, error) {
 	ctx, cancel := context.WithTimeout(ctx, r.pool.OpTimeout())
 	defer cancel()
 
@@ -117,7 +117,7 @@ func (r *UserRepo) GetUser(ctx context.Context, id int) (domain.User, error) {
 	return user, nil
 }
 
-func (r *UserRepo) GetUserByEmail(ctx context.Context, email string) (domain.User, error) {
+func (r *UserRepository) GetUserByEmail(ctx context.Context, email string) (domain.User, error) {
 	ctx, cancel := context.WithTimeout(ctx, r.pool.OpTimeout())
 	defer cancel()
 
@@ -154,7 +154,7 @@ func (r *UserRepo) GetUserByEmail(ctx context.Context, email string) (domain.Use
 	return user, nil
 }
 
-func (r *UserRepo) DeleteUser(ctx context.Context, id int) error {
+func (r *UserRepository) DeleteUser(ctx context.Context, id int) error {
 	ctx, cancel := context.WithTimeout(ctx, r.pool.OpTimeout())
 	defer cancel()
 
@@ -171,7 +171,7 @@ func (r *UserRepo) DeleteUser(ctx context.Context, id int) error {
 	return nil
 }
 
-func (r *UserRepo) UpdateUser(ctx context.Context, id int, user domain.User) (domain.User, error) {
+func (r *UserRepository) UpdateUser(ctx context.Context, id int, user domain.User) (domain.User, error) {
 	ctx, cancel := context.WithTimeout(ctx, r.pool.OpTimeout())
 	defer cancel()
 
