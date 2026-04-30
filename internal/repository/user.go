@@ -117,6 +117,43 @@ func (r *UserRepo) GetUser(ctx context.Context, id int) (domain.User, error) {
 	return user, nil
 }
 
+func (r *UserRepo) GetUserByEmail(ctx context.Context, email string) (domain.User, error) {
+	ctx, cancel := context.WithTimeout(ctx, r.pool.OpTimeout())
+	defer cancel()
+
+	query := `SELECT id, first_name, last_name, middle_name, 
+			email, phone_number, role, created_at, updated_at
+				FROM talan.users WHERE email = $1`
+
+	row := r.pool.QueryRow(ctx, query, email)
+
+	var user domain.User
+	err := row.Scan(
+		&user.ID,
+		&user.FirstName,
+		&user.LastName,
+		&user.MiddleName,
+		&user.Email,
+		&user.PhoneNumber,
+		&user.Role,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+	)
+
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return domain.User{}, fmt.Errorf(
+				"user with email=%s: %w",
+				email,
+				core_errors.ErrNotFound,
+			)
+		}
+		return domain.User{}, fmt.Errorf("scan user: %w", err)
+	}
+
+	return user, nil
+}
+
 func (r *UserRepo) DeleteUser(ctx context.Context, id int) error {
 	ctx, cancel := context.WithTimeout(ctx, r.pool.OpTimeout())
 	defer cancel()
