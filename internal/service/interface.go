@@ -13,3 +13,7 @@ type UserService interface {
 	DeleteUser(ctx context.Context, id int) error
 	UpdateUser(ctx context.Context, id int, user domain.User) (domain.User, error)
 }
+
+type IAuthService interface {
+	Registration(ctx context.Context, user domain.User) error
+}
