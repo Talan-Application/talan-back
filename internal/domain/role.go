@@ -1,6 +1,9 @@
 package domain
 
-import "fmt"
+import (
+	"database/sql/driver"
+	"fmt"
+)
 
 type UserRole int
 
@@ -32,4 +35,32 @@ func ParseRole(roleStr string) (UserRole, error) {
 	default:
 		return RoleStudent, fmt.Errorf("invalid role: %s", roleStr)
 	}
+}
+
+func (r UserRole) Value() (driver.Value, error) {
+	return r.String(), nil
+}
+
+func (r *UserRole) Scan(value interface{}) error {
+	if value == nil {
+		*r = RoleStudent
+		return nil
+	}
+
+	sv, ok := value.(string)
+	if !ok {
+		// Some drivers return []byte, so we handle that too
+		bv, ok := value.([]byte)
+		if !ok {
+			return fmt.Errorf("cannot scan %T into UserRole", value)
+		}
+		sv = string(bv)
+	}
+
+	role, err := ParseRole(sv)
+	if err != nil {
+		return err
+	}
+	*r = role
+	return nil
 }

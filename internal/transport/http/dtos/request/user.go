@@ -7,13 +7,12 @@ import (
 )
 
 type CreateUserRequest struct {
-	FirstName   string `json:"first_name"`
-	LastName    string `json:"last_name"`
-	MiddleName  string `json:"middle_name"`
-	Password    string `json:"password"`
-	Email       string `json:"email"`
-	PhoneNumber string `json:"phone_number"`
-	Role        string `json:"role"`
+	FirstName  string `json:"first_name"`
+	LastName   string `json:"last_name"`
+	MiddleName string `json:"middle_name"`
+	Password   string `json:"password"`
+	Email      string `json:"email"`
+	Role       string `json:"role"`
 }
 
 func DomainFromCreateUserDto(dto CreateUserRequest) domain.User {
@@ -23,13 +22,12 @@ func DomainFromCreateUserDto(dto CreateUserRequest) domain.User {
 	}
 
 	return domain.User{
-		FirstName:   dto.FirstName,
-		LastName:    dto.LastName,
-		MiddleName:  &dto.MiddleName,
-		Password:    dto.Password,
-		Email:       dto.Email,
-		PhoneNumber: &dto.PhoneNumber,
-		Role:        userRole,
+		FirstName:  dto.FirstName,
+		LastName:   dto.LastName,
+		MiddleName: &dto.MiddleName,
+		Password:   dto.Password,
+		Email:      dto.Email,
+		Role:       userRole,
 	}
 }
 
